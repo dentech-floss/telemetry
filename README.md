@@ -49,29 +49,29 @@ package example
 
 import (
     "google.golang.org/grpc"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+    "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 type Server struct {
-	port       int
-	grpcServer *grpc.Server
+    port       int
+    grpcServer *grpc.Server
 }
 
 func NewServer(
-	port int,
-	patientGatewayServiceV1 *PatientGatewayServiceV1,
+    port int,
+    patientGatewayServiceV1 *PatientGatewayServiceV1,
 ) *Server {
 
-	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),   // instrumentation
-		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()), // instrumentation
-	)
+    grpcServer := grpc.NewServer(
+        grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),   // instrumentation
+        grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()), // instrumentation
+    )
 
-	patientGatewayServiceV1.Register(grpcServer)
+    patientGatewayServiceV1.Register(grpcServer)
 
-	return &Server{
-		port:       port,
-		grpcServer: grpcServer,
-	}
+    return &Server{
+        port:       port,
+        grpcServer: grpcServer,
+    }
 }
 ```
