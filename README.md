@@ -20,19 +20,24 @@ go get github.com/dentech-floss/telemetry@v0.1.0
 package example
 
 import (
-    "context"
+    "github.com/dentech-floss/metadata/pkg/metadata"
     "github.com/dentech-floss/telemetry/pkg/telemetry"
+    "github.com/dentech-floss/revision/pkg/revision"
 )
 
 func main() {
+
     ctx := context.Background()
+
+    metadata := metadata.NewMetadata()
+
     shutdownTracing := telemetry.SetupTracing(
         ctx,
         &telemetry.TracingConfig{
-            ServiceName: "app name",
-            ServiceVersion: "github tag",
-            DeploymentEnvironment: "gcp project id",
-            OtlpExporterEnabled: true, // whether or not to export traces to a collector
+            ServiceName:           revision.ServiceName,
+            ServiceVersion:        revision.ServiceVersion,
+            DeploymentEnvironment: metadata.ProjectID,
+            OtlpExporterEnabled:   metadata.OnGCP,
             // OtlpCollectorHttpEndpoint: ..., // defaults to "opentelemetry-collector:80" if not set
             // OtlpCollectorTimeoutSecs: ...,  // default to 30 if not set
             // StdoutExporterEnabled: ...,     // if OtlpExporterEnabled is false, then you can enable this for stdout exporting
@@ -57,10 +62,7 @@ type Server struct {
     grpcServer *grpc.Server
 }
 
-func NewServer(
-    port int,
-    patientGatewayServiceV1 *PatientGatewayServiceV1,
-) *Server {
+func NewServer(port int, patientGatewayServiceV1 *PatientGatewayServiceV1) *Server {
 
     grpcServer := grpc.NewServer(
         grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),   // instrumentation
