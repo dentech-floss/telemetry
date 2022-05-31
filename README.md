@@ -45,7 +45,7 @@ func main() {
 }
 ```
 
-Now you can instrument different parts of your service that you want part of the tracing, like a gRPC server for example:
+Now you can instrument different parts of your service that you want part of the tracing, like a gRPC server for example. Note that if you use the [floss/server](https://github.com/dentech-floss/server) then this is already taken care of, this also applies to all other floss libraries since they come with tracing configured and enabled out of the box. But for the sake of showing an example anyway: 
 
 ```go
 package example
