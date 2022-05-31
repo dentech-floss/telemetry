@@ -1,10 +1,8 @@
 # telemetry
 
-Setup [Opentelemetry](https://github.com/open-telemetry/opentelemetry-go) support, currently only tracing but metrics and logs can/will be added when needed/supported. 
+Setup [Opentelemetry](https://github.com/open-telemetry/opentelemetry-go) support for collecting and exporting traces to a backend using a batching strategy. The spans can be exported to either an [Opentelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) or just to stdout for local development usage. 
 
-### Tracing
-
-The spans can be exported to either an [Opentelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) or just to stdout for local development usage. Both of these can't be enabled at the same time, first we check if the "OtlpExporterEnabled" flag is true and if that is not the case then we check if the "StdoutExporterEnabled" flag is true.
+Note that both of these can't be enabled at the same time, first we check if the "OtlpExporterEnabled" flag is true and if that is not the case then we check if the "StdoutExporterEnabled" flag is true.
 
 ## Install
 
