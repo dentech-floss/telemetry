@@ -7,7 +7,7 @@ Note that both of these can't be enabled at the same time, first we check if the
 ## Install
 
 ```
-go get github.com/dentech-floss/telemetry@v0.1.0
+go get github.com/dentech-floss/telemetry@v0.1.1
 ```
 
 ## Usage
@@ -29,7 +29,7 @@ func main() {
 
     metadata := metadata.NewMetadata()
 
-    shutdownTracing := telemetry.SetupTracing(
+    tracerProvider, shutdownTracing := telemetry.SetupTracing(
         ctx,
         &telemetry.TracingConfig{
             ServiceName:           revision.ServiceName,
@@ -42,6 +42,10 @@ func main() {
         },
     )
     defer shutdownTracing()
+
+    // And if you want to do manual instrumentation in your service then create a tracer 
+    // and inject it where needed, otherwise you don't need the tracerProvider variable
+    // tracer := tracerProvider.Tracer(revision.ServiceName)
 }
 ```
 

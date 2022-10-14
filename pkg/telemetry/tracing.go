@@ -44,10 +44,7 @@ func (c *TracingConfig) setDefaults() {
 	}
 }
 
-func SetupTracing(
-	ctx context.Context,
-	config *TracingConfig,
-) func() {
+func SetupTracing(ctx context.Context, config *TracingConfig) (*sdktrace.TracerProvider, func()) {
 	config.setDefaults()
 
 	// Create a resource describing this application
@@ -101,7 +98,7 @@ func SetupTracing(
 		propagation.Baggage{},
 	))
 
-	return func() {
+	return tracerProvider, func() {
 		tracerProvider.ForceFlush(ctx)
 		tracerProvider.Shutdown(ctx)
 	}
