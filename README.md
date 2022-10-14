@@ -1,4 +1,4 @@
-# OpenTelemetry configuration
+# telemetry
 
 Setup [Opentelemetry](https://github.com/open-telemetry/opentelemetry-go) support for collecting and exporting traces to a backend using a batching strategy. The spans can be exported to either an [Opentelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) or just to stdout for local development usage. 
 
