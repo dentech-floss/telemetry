@@ -7,7 +7,7 @@ Note that both of these can't be enabled at the same time, first we check if the
 ## Install
 
 ```
-go get github.com/dentech-floss/telemetry@v0.1.1
+go get github.com/dentech-floss/telemetry@v0.1.2
 ```
 
 ## Usage

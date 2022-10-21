@@ -9,8 +9,9 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
+
+	"go.opentelemetry.io/contrib/propagators/b3"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
@@ -92,11 +93,14 @@ func SetupTracing(ctx context.Context, config *TracingConfig) (*sdktrace.TracerP
 	)
 	otel.SetTracerProvider(tracerProvider)
 
+	// Register the B3 propagator globally
+	otel.SetTextMapPropagator(b3.New())
+
 	// Register the trace context and baggage propagators so data is propagated across services/processes
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	))
+	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+	// 	propagation.TraceContext{},
+	// 	propagation.Baggage{},
+	// ))
 
 	return tracerProvider, func() {
 		tracerProvider.ForceFlush(ctx)
