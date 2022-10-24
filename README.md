@@ -1,8 +1,14 @@
 # telemetry
 
-Setup [Opentelemetry](https://github.com/open-telemetry/opentelemetry-go) support for collecting and exporting traces to a backend using a batching strategy. The spans can be exported to either an [Opentelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) or just to stdout for local development usage. 
+Setup [Opentelemetry](https://github.com/open-telemetry/opentelemetry-go) support, only tracing is supported atm (metrics and logging is to come in the future).
 
-Note that both of these can't be enabled at the same time, first we check if the "OtlpExporterEnabled" flag is true and if that is not the case then we check if the "StdoutExporterEnabled" flag is true.
+## Tracing
+
+Tracing is set up for collecting and exporting traces to a backend using a batching strategy. The spans can be exported to either an [Opentelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) or just to stdout for local development usage. Note that both of these can't be enabled at the same time, first we check if the "OtlpExporterEnabled" flag is true and if that is not the case then we check if the "StdoutExporterEnabled" flag is true.
+
+### Propagation
+
+The default propagator is the standard W3C trace context/baggage, but this is possible to change by providing a "Propagator" in the config (see the example below). One reason for not using W3C is to provide a setup that the GCP infrastructure "does not understand" and thus does not tamper with (in order to opt out from Cloud Trace). This is explained in more detail in this blog post: [opting-out-of-tracing-on-gcp](https://lynn.zone/blog/opting-out-of-tracing-on-gcp/) (the update in that post about B3 propagation is based on correspondance between the author of this lib and the author of the blog).
 
 ## Install
 
@@ -36,9 +42,10 @@ func main() {
             ServiceVersion:        revision.ServiceVersion,
             DeploymentEnvironment: metadata.ProjectID,
             OtlpExporterEnabled:   metadata.OnGCP,
-            // OtlpCollectorHttpEndpoint: ..., // defaults to "opentelemetry-collector:80" if not set
-            // OtlpCollectorTimeoutSecs: ...,  // default to 30 if not set
-            // StdoutExporterEnabled: ...,     // if OtlpExporterEnabled is false, then you can enable this for stdout exporting
+            // OtlpCollectorHttpEndpoint: ...,      // defaults to "opentelemetry-collector:80" if not set
+            // OtlpCollectorTimeoutSecs: ...,       // default to 30 if not set
+            // StdoutExporterEnabled: ...,          // if OtlpExporterEnabled is false, then you can enable this for stdout exporting
+            // Propagator: telemetry.B3_PROPAGATOR, // defaults to W3C trace context/baggage if not set, set it to switch propagator
         },
     )
     defer shutdownTracing()

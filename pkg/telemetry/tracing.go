@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -9,9 +10,9 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 
-	"go.opentelemetry.io/otel/sdk/resource"
-
 	"go.opentelemetry.io/contrib/propagators/b3"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
@@ -20,6 +21,9 @@ import (
 var defaultOtlpCollectorHttpEndpoint = "opentelemetry-collector:80"
 var defaultOtlpCollectorTimeoutSecs = 30
 var defaultStdoutExporterEnabled = false
+
+// B3 propagator that can be used instead of the default W3C trace context/baggage
+var B3_PROPAGATOR = b3.New()
 
 type TracingConfig struct {
 	ServiceName           string
@@ -31,6 +35,8 @@ type TracingConfig struct {
 	OtlpCollectorTimeoutSecs  *int
 
 	StdoutExporterEnabled *bool
+
+	Propagator propagation.TextMapPropagator
 }
 
 func (c *TracingConfig) setDefaults() {
@@ -42,6 +48,13 @@ func (c *TracingConfig) setDefaults() {
 	}
 	if c.StdoutExporterEnabled == nil {
 		c.StdoutExporterEnabled = &defaultStdoutExporterEnabled
+	}
+	if c.Propagator == nil || (reflect.ValueOf(c.Propagator).Kind() == reflect.Ptr && reflect.ValueOf(c.Propagator).IsNil()) {
+		// If a propagator has not been provided then we default to W3C trace context/baggage
+		c.Propagator = propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		)
 	}
 }
 
@@ -93,14 +106,8 @@ func SetupTracing(ctx context.Context, config *TracingConfig) (*sdktrace.TracerP
 	)
 	otel.SetTracerProvider(tracerProvider)
 
-	// Register the B3 propagator globally
-	otel.SetTextMapPropagator(b3.New())
-
-	// Register the trace context and baggage propagators so data is propagated across services/processes
-	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-	// 	propagation.TraceContext{},
-	// 	propagation.Baggage{},
-	// ))
+	// Register the propagator globally
+	otel.SetTextMapPropagator(config.Propagator)
 
 	return tracerProvider, func() {
 		tracerProvider.ForceFlush(ctx)
