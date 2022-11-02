@@ -13,7 +13,7 @@ The default propagator is the standard W3C trace context/baggage, but this is po
 ## Install
 
 ```
-go get github.com/dentech-floss/telemetry@v0.1.2
+go get github.com/dentech-floss/telemetry@v0.1.3
 ```
 
 ## Usage
@@ -27,6 +27,8 @@ import (
     "github.com/dentech-floss/metadata/pkg/metadata"
     "github.com/dentech-floss/telemetry/pkg/telemetry"
     "github.com/dentech-floss/revision/pkg/revision"
+
+    // sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 func main() {
@@ -42,10 +44,11 @@ func main() {
             ServiceVersion:        revision.ServiceVersion,
             DeploymentEnvironment: metadata.ProjectID,
             OtlpExporterEnabled:   metadata.OnGCP,
-            // OtlpCollectorHttpEndpoint: ...,      // defaults to "opentelemetry-collector:80" if not set
-            // OtlpCollectorTimeoutSecs: ...,       // default to 30 if not set
-            // StdoutExporterEnabled: ...,          // if OtlpExporterEnabled is false, then you can enable this for stdout exporting
-            // Propagator: telemetry.B3_PROPAGATOR, // defaults to W3C trace context/baggage if not set, set it to switch propagator
+            // OtlpCollectorHttpEndpoint: ...,                                 // defaults to "opentelemetry-collector:80" if not set
+            // OtlpCollectorTimeoutSecs: ...,                                  // default to 30 if not set
+            // StdoutExporterEnabled: ...,                                     // if OtlpExporterEnabled is false, then you can enable this for stdout exporting
+            // Propagator: telemetry.B3_PROPAGATOR,                            // defaults to W3C trace context/baggage if not set, set it to switch propagator
+            // Sampler: sdktrace.ParentBased(sdktrace.TraceIDRatioBased(0.5)), // defaults to "always sample" if not set, which is not recommended for production...
         },
     )
     defer shutdownTracing()

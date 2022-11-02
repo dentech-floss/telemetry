@@ -37,6 +37,7 @@ type TracingConfig struct {
 	StdoutExporterEnabled *bool
 
 	Propagator propagation.TextMapPropagator
+	Sampler    sdktrace.Sampler
 }
 
 func (c *TracingConfig) setDefaults() {
@@ -49,12 +50,16 @@ func (c *TracingConfig) setDefaults() {
 	if c.StdoutExporterEnabled == nil {
 		c.StdoutExporterEnabled = &defaultStdoutExporterEnabled
 	}
-	if c.Propagator == nil || (reflect.ValueOf(c.Propagator).Kind() == reflect.Ptr && reflect.ValueOf(c.Propagator).IsNil()) {
+	if interfaceIsNil(c.Propagator) {
 		// If a propagator has not been provided then we default to W3C trace context/baggage
 		c.Propagator = propagation.NewCompositeTextMapPropagator(
 			propagation.TraceContext{},
 			propagation.Baggage{},
 		)
+	}
+	if interfaceIsNil(c.Sampler) {
+		// If a sampler has not been provided the we default to "always sample", not recommended for production...
+		c.Sampler = sdktrace.AlwaysSample()
 	}
 }
 
@@ -73,10 +78,6 @@ func SetupTracing(ctx context.Context, config *TracingConfig) (*sdktrace.TracerP
 	if err != nil {
 		panic(err)
 	}
-
-	// Read this for an explanation to why we always sample:
-	// https://anecdotes.dev/opentelemetry-on-google-cloud-unraveling-the-mystery-f61f044c18be
-	sampler := sdktrace.AlwaysSample()
 
 	var traceExporter sdktrace.SpanExporter
 	if config.OtlpExporterEnabled {
@@ -101,7 +102,7 @@ func SetupTracing(ctx context.Context, config *TracingConfig) (*sdktrace.TracerP
 
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithResource(res),
-		sdktrace.WithSampler(sampler),
+		sdktrace.WithSampler(config.Sampler),
 		sdktrace.WithSpanProcessor(bsp),
 	)
 	otel.SetTracerProvider(tracerProvider)
@@ -113,4 +114,11 @@ func SetupTracing(ctx context.Context, config *TracingConfig) (*sdktrace.TracerP
 		tracerProvider.ForceFlush(ctx)
 		tracerProvider.Shutdown(ctx)
 	}
+}
+
+func interfaceIsNil(i interface{}) bool {
+	if i == nil || (reflect.ValueOf(i).Kind() == reflect.Ptr && reflect.ValueOf(i).IsNil()) {
+		return true
+	}
+	return false
 }
