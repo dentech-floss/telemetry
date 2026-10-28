@@ -13,7 +13,7 @@ The default propagator is the standard W3C trace context/baggage, but this is po
 ## Install
 
 ```
-go get github.com/dentech-floss/telemetry@v0.1.8
+go get github.com/dentech-floss/telemetry@v0.1.9
 ```
 
 ## Usage
