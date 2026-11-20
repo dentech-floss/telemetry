@@ -6,6 +6,18 @@ Setup [Opentelemetry](https://github.com/open-telemetry/opentelemetry-go) suppor
 
 Tracing is set up for collecting and exporting traces to a backend using a batching strategy. The spans can be exported to either an [Opentelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) or just to stdout for local development usage. Note that both of these can't be enabled at the same time, first we check if the "OtlpExporterEnabled" flag is true and if that is not the case then we check if the "StdoutExporterEnabled" flag is true.
 
+### Configuration from the environment
+
+The standard OpenTelemetry environment variables win over the config, so a platform can switch tracing on without code changes. When none of them are set (Cloud Run), the config decides as before.
+
+| Variable | Effect |
+| --- | --- |
+| `OTEL_TRACES_EXPORTER` | `otlp`, `console` (stdout) or `none`. Overrides `OtlpExporterEnabled` / `StdoutExporterEnabled`. Other values are ignored. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` (or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`) | The collector's URL, e.g. `http://otel-collector.observability:4318`. The scheme decides TLS. When set, `OtlpCollectorHttpEndpoint` is ignored. |
+| `OTEL_RESOURCE_ATTRIBUTES` | E.g. `deployment.environment=test`. Overrides the resource attributes from the config (`OTEL_SERVICE_NAME` likewise). |
+
+On UpCloud the app chart (`dentechse/infra`, `platform/app-chart`) sets these, so services that pass `OtlpExporterEnabled: metadata.OnGCP` (false there) still export their traces.
+
 ### Propagation
 
 The default propagator is the standard W3C trace context/baggage, but this is possible to change by providing a "Propagator" in the config (see the example below). One reason for not using W3C is to provide a setup that the GCP infrastructure "does not understand" and thus does not tamper with (in order to opt out from Cloud Trace). This is explained in more detail in this blog post: [opting-out-of-tracing-on-gcp](https://lynn.zone/blog/opting-out-of-tracing-on-gcp/) (the update in that post about B3 propagation is based on correspondance between the author of this lib and the author of the blog).
@@ -13,7 +25,7 @@ The default propagator is the standard W3C trace context/baggage, but this is po
 ## Install
 
 ```
-go get github.com/dentech-floss/telemetry@v0.1.9
+go get github.com/dentech-floss/telemetry@v0.2.0
 ```
 
 ## Usage
