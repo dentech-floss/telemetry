@@ -13,7 +13,8 @@ The standard OpenTelemetry environment variables win over the config, so the dep
 | Variable | Effect |
 | --- | --- |
 | `OTEL_TRACES_EXPORTER` | `otlp`, `console` (stdout) or `none`. Overrides `OtlpExporterEnabled` / `StdoutExporterEnabled`. Other values are ignored. |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` (or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`) | The collector's URL, e.g. `http://otel-collector.observability:4318`. The scheme decides TLS. When set, `OtlpCollectorHttpEndpoint` is ignored. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | The collector's base URL, e.g. `http://collector:4318`; traces go to `/v1/traces` under it. The scheme decides TLS. When set, `OtlpCollectorHttpEndpoint` is ignored. |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | The full URL for traces only, e.g. `http://collector:4318/v1/traces` (used as is, no path is added). Wins over `OTEL_EXPORTER_OTLP_ENDPOINT`. |
 | `OTEL_RESOURCE_ATTRIBUTES` | E.g. `deployment.environment=test`. Overrides the resource attributes from the config (`OTEL_SERVICE_NAME` likewise). |
 
 For example, a service that passes `OtlpExporterEnabled: metadata.OnGCP` exports no traces outside GCP; with `OTEL_TRACES_EXPORTER=otlp` and `OTEL_EXPORTER_OTLP_ENDPOINT` set, it does.

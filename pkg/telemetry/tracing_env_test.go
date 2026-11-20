@@ -4,12 +4,21 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"sync/atomic"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 )
+
+// unsetEnv removes an inherited variable for the test (t.Setenv(key, "")
+// would leave it set, but empty) and restores it afterwards.
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "") // registers the restore
+	require.NoError(t, os.Unsetenv(key))
+}
 
 func Test_tracesExporter(t *testing.T) {
 	enabled, disabled := true, false
@@ -41,6 +50,8 @@ func Test_tracesExporter(t *testing.T) {
 }
 
 func Test_newResource(t *testing.T) {
+	unsetEnv(t, "OTEL_SERVICE_NAME")
+
 	attr := func(t *testing.T, config *TracingConfig, key string) (string, bool) {
 		config.setDefaults()
 		res, err := newResource(context.Background(), config)
@@ -55,14 +66,14 @@ func Test_newResource(t *testing.T) {
 	env := string(semconv.DeploymentEnvironmentKey)
 
 	t.Run("from config", func(t *testing.T) {
-		t.Setenv("OTEL_RESOURCE_ATTRIBUTES", "")
+		unsetEnv(t, "OTEL_RESOURCE_ATTRIBUTES")
 		v, ok := attr(t, &TracingConfig{ServiceName: "svc", DeploymentEnvironment: "tandlakare-se-prod"}, env)
 		require.True(t, ok)
 		require.Equal(t, "tandlakare-se-prod", v)
 	})
 
 	t.Run("empty in config: not set", func(t *testing.T) {
-		t.Setenv("OTEL_RESOURCE_ATTRIBUTES", "")
+		unsetEnv(t, "OTEL_RESOURCE_ATTRIBUTES")
 		_, ok := attr(t, &TracingConfig{ServiceName: "svc"}, env)
 		require.False(t, ok)
 	})
@@ -91,6 +102,7 @@ func Test_SetupTracing_OtlpFromEnvironment(t *testing.T) {
 	defer collector.Close()
 
 	t.Setenv(envTracesExporter, "otlp")
+	unsetEnv(t, envOtlpTracesEndpoint) // would win over the endpoint below
 	t.Setenv(envOtlpEndpoint, collector.URL)
 
 	tracerProvider, shutdownTracing := SetupTracing(
