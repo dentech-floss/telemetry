@@ -24,7 +24,7 @@ func Test_tracesExporter(t *testing.T) {
 		{name: "unset, config off", env: "", otlp: false, want: exporterNone},
 		{name: "unset, config OTLP", env: "", otlp: true, want: exporterOtlp},
 		{name: "unset, config stdout", env: "", otlp: false, stdout: &enabled, want: exporterConsole},
-		{name: "env otlp beats config off (UpCloud)", env: "otlp", otlp: false, want: exporterOtlp},
+		{name: "env otlp beats config off", env: "otlp", otlp: false, want: exporterOtlp},
 		{name: "env none beats config OTLP", env: "none", otlp: true, want: exporterNone},
 		{name: "env console", env: "console", otlp: true, stdout: &disabled, want: exporterConsole},
 		{name: "env is trimmed and case-insensitive", env: " OTLP ", otlp: false, want: exporterOtlp},
@@ -78,8 +78,8 @@ func Test_newResource(t *testing.T) {
 	})
 }
 
-// On UpCloud, OtlpExporterEnabled is false (OnGCP), and the environment
-// switches the OTLP exporter on and points it at the collector.
+// OtlpExporterEnabled is false (e.g. metadata.OnGCP outside GCP), and the
+// environment switches the OTLP exporter on and points it at the collector.
 func Test_SetupTracing_OtlpFromEnvironment(t *testing.T) {
 	var received atomic.Int32
 	collector := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

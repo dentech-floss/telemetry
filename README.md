@@ -8,7 +8,7 @@ Tracing is set up for collecting and exporting traces to a backend using a batch
 
 ### Configuration from the environment
 
-The standard OpenTelemetry environment variables win over the config, so a platform can switch tracing on without code changes. When none of them are set (Cloud Run), the config decides as before.
+The standard OpenTelemetry environment variables win over the config, so the deployment can switch tracing on or off without code changes. When none of them are set, the config decides as before.
 
 | Variable | Effect |
 | --- | --- |
@@ -16,7 +16,7 @@ The standard OpenTelemetry environment variables win over the config, so a platf
 | `OTEL_EXPORTER_OTLP_ENDPOINT` (or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`) | The collector's URL, e.g. `http://otel-collector.observability:4318`. The scheme decides TLS. When set, `OtlpCollectorHttpEndpoint` is ignored. |
 | `OTEL_RESOURCE_ATTRIBUTES` | E.g. `deployment.environment=test`. Overrides the resource attributes from the config (`OTEL_SERVICE_NAME` likewise). |
 
-On UpCloud the app chart (`dentechse/infra`, `platform/app-chart`) sets these, so services that pass `OtlpExporterEnabled: metadata.OnGCP` (false there) still export their traces.
+For example, a service that passes `OtlpExporterEnabled: metadata.OnGCP` exports no traces outside GCP; with `OTEL_TRACES_EXPORTER=otlp` and `OTEL_EXPORTER_OTLP_ENDPOINT` set, it does.
 
 ### Propagation
 

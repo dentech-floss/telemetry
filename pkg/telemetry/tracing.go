@@ -22,8 +22,8 @@ import (
 )
 
 // Standard OpenTelemetry environment variables. When set they win over the
-// config, so a platform can switch tracing on without code changes: on UpCloud
-// the app chart sets them, Cloud Run sets none, so GCP behaves as before.
+// config, so the deployment can switch tracing on or off without code
+// changes. When none of them are set, the config decides as before.
 //   - OTEL_TRACES_EXPORTER: "otlp", "console" (stdout) or "none". Unset or
 //     another value: the config decides (OtlpExporterEnabled, StdoutExporterEnabled).
 //   - OTEL_EXPORTER_OTLP_ENDPOINT / OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: the
